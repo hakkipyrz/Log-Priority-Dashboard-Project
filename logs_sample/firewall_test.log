@@ -1,0 +1,3 @@
+date=2025-10-21 time=14:30:00 devname=FGT60D type=traffic level=notice srcip=10.0.0.5 dstip=8.8.8.8 action=accept msg="Clean traffic"
+date=2025-10-21 time=14:35:12 devname=FGT60D type=utm level=alert srcip=192.168.1.100 dstip=45.33.22.11 action=deny msg="IPS Attack Detected: SQL Injection"
+date=2025-10-21 time=14:36:00 devname=FGT60D type=traffic level=warning srcip=192.168.1.50 dstip=23.23.23.23 action=block msg="Policy Violation"
