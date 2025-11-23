@@ -1,3 +1,4 @@
+from flask import Flask
 from flask import Flask, render_template, request, redirect, url_for
 import os
 from parsers.kali_parser import parse_kali_log
@@ -114,6 +115,20 @@ def upload_file():
             PROCESSED_LOGS.append(parsed_data)
             
     return redirect(url_for('index'))
+
+# ... (app.py dosyasının geri kalanı) ...
+
+@app.route('/clear_logs', methods=['POST'])
+def clear_logs():
+    """Mevcut işlenen logları sunucudan temizler."""
+    global PROCESSED_LOGS
+    PROCESSED_LOGS.clear()
+    # Grafik verilerini ve istatistikleri de sıfırlıyoruz
+    severity_counts = {"CRITICAL": 0, "HIGH": 0, "LOW": 0}
+    stats = {"total": 0, "critical": 0, "fp_reduced": 0}
+    return "OK", 200 # Başarılı yanıtı
+
+# ... (if __name__ == '__main__': app.run(debug=True)) ...
 
 if __name__ == '__main__':
     app.run(debug=True)

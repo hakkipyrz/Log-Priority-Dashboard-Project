@@ -3,350 +3,432 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LPD - Next Gen SOC</title>
+    <title>LPD - Next Gen SOC Dashboard</title>
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap 5 & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* --- TEMA DEĞİŞKENLERİ --- */
+        /* --- TEMEL STİLLER --- */
         :root {
-            /* Varsayılan: LIGHT MODE */
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --navbar-bg: #ffffff;
-            --table-hover: #f1f5f9;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            
-            /* Scrollbar Renkleri */
-            --scrollbar-track: transparent; /* Arka plan şeffaf */
-            --scrollbar-thumb: #cbd5e1;
-            --scrollbar-thumb-hover: #94a3b8;
-
-            /* Sabit Renkler */
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --border-color: #334155;
             --accent-red: #ef4444;
             --accent-orange: #f97316;
             --accent-green: #10b981;
             --accent-blue: #3b82f6;
+            --table-row-bg: #1e293b;
+            --table-row-hover: #2c3e50;
+            --card-hover-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+            --chart-border-color: rgba(59, 130, 246, 0.2);
+            --chart-hover-scale: 1.02;
+
+            --badge-text-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+            --badge-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
 
-        [data-theme="dark"] {
-            /* DARK MODE */
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --navbar-bg: rgba(30, 41, 59, 0.8);
-            --table-hover: rgba(59, 130, 246, 0.1);
-            --shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-            
-            /* Dark Mode Scrollbar */
-            --scrollbar-track: transparent;
-            --scrollbar-thumb: #334155;
-            --scrollbar-thumb-hover: #3b82f6;
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --table-row-bg: #ffffff;
+            --table-row-hover: #f8fafc;
+            --card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --chart-border-color: rgba(0, 0, 0, 0.08);
+            --chart-hover-scale: 1.02;
+
+            --badge-text-shadow: none;
+            --badge-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         body {
             background-color: var(--bg-body);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s, color 0.3s;
-            overflow-x: hidden; /* Sayfa sağa sola kaymasın */
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* --- DÜZELTİLMİŞ SCROLLBAR --- */
-        ::-webkit-scrollbar {
-            width: 8px;  /* Dikey genişlik */
-            height: 0px; /* Yatay yükseklik SIFIRLANDI (Mavi çizgi sorunu çözüldü) */
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--scrollbar-track); 
-            margin-block: 5px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--scrollbar-thumb); 
-            border-radius: 4px;
-            /* Border kaldırıldı (Yanıp sönen çizgi sorunu çözüldü) */
-            transition: background 0.2s;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--scrollbar-thumb-hover);
-        }
-
-        /* --- UI STİLLERİ --- */
-        .unselectable { -webkit-user-select: none; user-select: none; cursor: default; }
-        
-        .instruction-text, .hint-text {
-            color: #60a5fa !important; font-weight: 500; letter-spacing: 0.3px;
-        }
-        
-        .time-col { color: var(--text-muted); font-weight: 500; white-space: nowrap; }
-        [data-theme="dark"] .time-col { color: #e2e8f0; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-body); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         .navbar {
-            background-color: var(--navbar-bg);
-            backdrop-filter: blur(10px);
+            background: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.3s;
+            padding: 1rem 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
-        .brand-logo {
-            font-weight: 800;
-            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+
+        .brand-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-weight: 800;
         }
 
-        .custom-card {
+        .glass-card {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s, background-color 0.3s;
-        }
-        
-        .stat-card { position: relative; overflow: hidden; }
-        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
-        .stat-critical::before { background-color: var(--accent-red); }
-        .stat-success::before { background-color: var(--accent-green); }
-        
-        .stat-value { font-size: 2.5rem; font-weight: 700; line-height: 1; }
-        .stat-label { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-
-        /* --- TABLO STİLİ --- */
-        .cyber-table-container {
             border: 1px solid var(--border-color);
             border-radius: 12px;
             overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative; /* z-index için */
+        }
+        
+        /* DİKKAT: Blur sorununu çözen kısım burası. Sadece .hover-effect sınıfına sahip kartlar blur yapar */
+        .glass-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-hover-shadow);
+            border-color: var(--accent-blue);
+        }
+
+        .stat-value { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; opacity: 0.9; color: var(--text-muted); }
+        
+        .border-critical { border-left: 4px solid var(--accent-red); }
+        .border-success { border-left: 4px solid var(--accent-green); }
+
+        /* --- GRAFİK KARTI İÇİN ÖZEL EFEKT --- */
+        /* Blur katmanını sadece grafik kartının içine, konteynerin dışına taşıdık */
+        .blur-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 9990;
+        }
+
+        /* Grafik kartına özel sınıf */
+        .chart-card-special {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease !important;
+        }
+
+        /* Grafik kartının üzerine gelince tetiklenecekler */
+        .chart-card-wrapper:hover .blur-overlay {
+            opacity: 1;
+        }
+
+        .chart-card-wrapper:hover .chart-card-special {
+            transform: scale(1.15);
+            z-index: 9999;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+            border-color: var(--accent-blue);
             position: relative;
         }
-        [data-theme="dark"] .cyber-table-container {
-            border-color: rgba(59, 130, 246, 0.3);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.05);
+
+        .chart-wrapper div {
+            transition: height 0.4s ease;
+        }
+        .chart-card-wrapper:hover .chart-wrapper div {
+            height: 280px !important; /* Grafik büyür */
         }
 
-        .table-custom {
-            --bs-table-bg: transparent;
-            --bs-table-color: var(--text-main);
-            --bs-table-border-color: var(--border-color);
-            width: 100%; /* Genişlik tam otursun */
+        /* --- UPLOAD ALANI --- */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            background: rgba(59, 130, 246, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
         }
-        .table-custom th {
-            background-color: var(--bg-card);
-            color: var(--text-main);
-            font-weight: 700;
-            text-transform: uppercase;
+        .upload-zone:hover { 
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* --- TABLO --- */
+        .table-container-card {
+            background: var(--bg-card);
+        }
+
+        .table-responsive { max-height: 72vh; overflow-y: auto; }
+        .cyber-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        
+        .cyber-table th {
+            background: var(--bg-card);
+            color: var(--text-muted) !important;
             font-size: 0.75rem;
-            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 1.1rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
             border-bottom: 2px solid var(--border-color);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer; /* Tıklanabilir olduğunu göster */
+            user-select: none;
         }
+        
+        .cyber-table th:hover {
+            color: var(--accent-blue) !important;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
         .log-row {
+            background-color: var(--table-row-bg);
+            color: var(--text-main);
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
-            cursor: default;
-            transition: all 0.2s;
+            transition: background-color 0.15s ease;
         }
-        .log-row:hover { 
-            background-color: var(--table-hover);
-            transform: translateX(4px);
+
+        .log-row td { 
+            padding: 0.9rem 1rem; 
+            border-bottom: 1px solid var(--border-color); 
+            vertical-align: middle;
         }
-        .log-row.hidden { display: none; }
+
+        .log-row:hover { background-color: var(--table-row-hover); }
+
+        .row-critical { border-left: 3px solid var(--accent-red); }
+        .row-high { border-left: 3px solid var(--accent-orange); }
+        .row-low { border-left: 3px solid var(--accent-green); }
+
+        .badge-cyber { 
+            padding: 0.4em 0.9em; 
+            border-radius: 6px; 
+            font-weight: 700; 
+            font-size: 0.7rem;
+            display: inline-block;
+            text-shadow: var(--badge-text-shadow);
+            box-shadow: var(--badge-box-shadow);
+        }
         
-        /* SCROLL FIX */
-        .table-responsive { 
-            max-height: 600px; 
-            overflow-y: auto; 
-            overflow-x: hidden; /* Yatay kaydırmayı tamamen kapat */
-            overscroll-behavior: contain; 
+        .bg-crit-soft { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.5); }
+        .bg-high-soft { background: rgba(249, 115, 22, 0.2); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.5); }
+        .bg-low-soft { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.5); }
+
+        [data-theme="light"] .bg-crit-soft { color: #991b1b; background: #fecaca; border-color: #f87171; }
+        [data-theme="light"] .bg-high-soft { color: #9a3412; background: #fed7aa; border-color: #fb923c; }
+        [data-theme="light"] .bg-low-soft { color: #065f46; background: #a7f3d0; border-color: #34d399; }
+
+        .empty-state { padding: 4rem 2rem; text-align: center; color: var(--text-muted); }
+        .badge-source { background: rgba(148, 163, 184, 0.15); color: var(--text-main); border: 1px solid var(--border-color); padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;}
+
+        .text-primary-custom { color: var(--accent-blue) !important; }
+        .text-muted-custom { color: var(--text-muted) !important; }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .online-indicator {
+            width: 10px; height: 10px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: pulse-green 2s infinite;
         }
 
-        .badge-glow { box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
-        .bg-critical { background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .bg-high { background-color: rgba(249, 115, 22, 0.15); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.3); }
-        .bg-low { background-color: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-
-        .upload-area {
-            border: 2px dashed var(--border-color);
-            background-color: rgba(59, 130, 246, 0.02);
-            border-radius: 12px;
-            transition: all 0.3s;
+        .btn-custom-primary {
+            background-color: var(--accent-blue);
+            border: none;
+            transition: all 0.3s ease;
+            color: #fff;
         }
-        .upload-area:hover {
-            border-color: var(--accent-blue);
-            background-color: rgba(59, 130, 246, 0.08);
+        .btn-custom-primary:hover {
+            background-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            color: #fff;
+        }
+
+        .btn-custom-danger {
+            background-color: var(--accent-red);
+            border: none;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .btn-custom-danger:hover {
+            background-color: #dc2626;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, var(--text-main) 0%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .section-title i {
+            color: var(--accent-blue);
+            margin-right: 10px;
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg sticky-top unselectable">
-    <div class="container">
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container-fluid px-4">
         <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-            <i class="fa-solid fa-shield-halved text-primary fa-lg"></i>
-            <span class="brand-logo">LPD PROJECT</span>
+            <i class="fa-solid fa-shield-cat text-primary-custom fa-xl"></i>
+            <span class="brand-text fs-5">LPD DASHBOARD</span>
         </a>
         
-        <div class="d-flex align-items-center gap-2">
-            <!-- Dil Değiştirme -->
-            <button class="btn btn-outline-primary btn-sm rounded-pill fw-bold" onclick="toggleLanguage()">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold" onclick="toggleLanguage()">
                 <i class="fa-solid fa-globe me-1"></i> <span id="currentLang">TR</span>
             </button>
-
-            <!-- Tema Değiştirme -->
-            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="themeToggle" onclick="toggleTheme()">
+            <button class="btn btn-sm btn-outline-secondary rounded-circle" style="width: 34px; height: 34px;" onclick="toggleTheme()">
                 <i class="fa-solid fa-sun" id="themeIcon"></i>
             </button>
-            
-            <div class="vr mx-2 text-secondary"></div>
-
-            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
-                <i class="fa-solid fa-circle fa-2xs me-1"></i> <span data-lang="system_active">Sistem Aktif</span>
-            </span>
+            <div class="d-flex align-items-center border-start ps-3 border-secondary border-opacity-25">
+                <div class="bg-success bg-opacity-25 text-success border border-success border-opacity-25 rounded-pill px-3 py-1 d-flex align-items-center fw-bold" style="font-size: 0.8rem;">
+                    <span class="online-indicator"></span> <span data-lang="system_active">AKTİF</span>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
 
-<div class="container py-5">
+<div class="container-fluid px-4 py-4">
     
     {% if error %}
-    <div class="alert alert-danger border-0 shadow-sm d-flex align-items-center gap-3 mb-4 unselectable" role="alert">
-        <i class="fa-solid fa-triangle-exclamation fa-xl text-danger"></i>
-        <div><strong>Error:</strong> {{ error }}</div>
+    <div class="alert alert-danger shadow-sm border-0 d-flex align-items-center gap-3 mb-4" role="alert">
+        <i class="fa-solid fa-bug fa-lg"></i>
+        <div><strong>Hata:</strong> {{ error }}</div>
         <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
     </div>
     {% endif %}
 
     <div class="row g-4">
-        
-        <!-- SOL KOLON -->
-        <div class="col-lg-4">
-            <div class="d-flex flex-column gap-4">
-                
-                <div class="row g-3 unselectable">
-                    <div class="col-6">
-                        <div class="custom-card stat-card stat-critical p-4 h-100">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="stat-value text-danger">{{ stats.critical | default(0) }}</div>
-                                <i class="fa-solid fa-radiation text-danger opacity-25 fa-xl"></i>
-                            </div>
-                            <div class="stat-label" data-lang="critical_threat">Kritik Tehdit</div>
+        <div class="col-lg-3 d-flex flex-column gap-4">
+            
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="glass-card border-critical p-3 h-100">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="stat-value text-danger" id="statCritical">{{ stats.critical | default(0) }}</span>
+                            <i class="fa-solid fa-virus text-danger opacity-25 fa-lg"></i>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="custom-card stat-card stat-success p-4 h-100">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="stat-value text-success">{{ stats.fp_reduced | default(0) }}</div>
-                                <i class="fa-solid fa-filter text-success opacity-25 fa-xl"></i>
-                            </div>
-                            <div class="stat-label" data-lang="fp_blocked">FP Engellendi</div>
-                        </div>
+                        <div class="stat-label" data-lang="critical_threat">Kritik Tehdit</div>
                     </div>
                 </div>
-
-                <div class="custom-card p-4 unselectable">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h6 class="text-uppercase fw-bold m-0" style="color: var(--text-main);">
-                            <i class="fa-solid fa-chart-pie me-2 text-primary"></i> <span data-lang="threat_dist">Tehdit Dağılımı</span>
-                        </h6>
-                        <button id="resetFilterBtn" class="btn btn-xs btn-outline-danger py-0" style="display:none; font-size: 0.7rem;" onclick="resetFilter()">
-                            <span data-lang="clear_filter">Temizle</span> <i class="fa-solid fa-xmark ms-1"></i>
-                        </button>
-                    </div>
-                    <div style="height: 250px; position: relative;">
-                        <canvas id="severityChart" data-stats='{{ chart_data | tojson | safe }}'></canvas>
-                        <div id="centerText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; display: none;">
-                            <span class="text-muted small" data-lang="filter">Filtre</span><br>
-                            <strong id="centerLabel" style="font-size: 1.2rem; color: var(--text-main);">All</strong>
+                <div class="col-6">
+                    <div class="glass-card border-success p-3 h-100">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="stat-value text-success" id="statSafe">{{ stats.fp_reduced | default(0) }}</span>
+                            <i class="fa-solid fa-shield-halved text-success opacity-25 fa-lg"></i>
                         </div>
+                        <div class="stat-label" data-lang="fp_blocked">Güvenli Trafik</div>
                     </div>
-                    <p class="text-center hint-text small mt-3 fst-italic">
-                        <i class="fa-solid fa-hand-pointer me-1"></i> <span data-lang="chart_hint">Tabloyu filtrelemek için grafik dilimlerine tıklayın.</span>
-                    </p>
-                </div>
-
-                <div class="custom-card p-4">
-                    <h6 class="text-uppercase mb-3 fw-bold unselectable" style="color: var(--text-main);">
-                        <i class="fa-solid fa-upload me-2 text-primary"></i> <span data-lang="log_analysis">Log Analizi</span>
-                    </h6>
-                    <form action="/upload" method="post" enctype="multipart/form-data" class="upload-area p-4 text-center">
-                        <i class="fa-solid fa-file-shield fa-3x text-primary mb-3 unselectable"></i>
-                        
-                        <p class="instruction-text mb-3 unselectable" data-lang="upload_hint">
-                            Analiz etmek istediğiniz .log veya .txt dosyasını seçin.
-                        </p>
-                        
-                        <input class="form-control mb-3" type="file" name="file" accept=".log,.txt" required>
-                        <button class="btn btn-primary w-100 fw-bold py-2" type="submit">
-                            <i class="fa-solid fa-magnifying-glass me-2"></i> <span data-lang="start_analysis">Analizi Başlat</span>
-                        </button>
-                    </form>
                 </div>
             </div>
+
+            <div class="chart-card-wrapper position-relative">
+                <div class="blur-overlay"></div> <div class="glass-card p-4 flex-grow-0 chart-card-special">
+                    <h4 class="section-title"><i class="fa-solid fa-chart-pie"></i> <span data-lang="threat_dist">Tehdit Dağılımı</span></h4>
+                    <div class="chart-wrapper" style="border: 1px solid var(--chart-border-color); border-radius: 10px; padding: 15px; background: rgba(59, 130, 246, 0.03);">
+                        <div style="height: 180px; position: relative;">
+                            <canvas id="severityChart" data-stats='{{ chart_data | tojson | safe }}'></canvas>
+                        </div>
+                        <p class="text-center text-muted-custom small mt-3 mb-0" style="font-size: 0.75rem;">
+                            <button id="resetFilterBtn" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill me-2" style="display:none; font-size: 0.7rem;" onclick="resetFilter()" data-lang="reset_filter">Filtreyi Sıfırla</button>
+                            <span data-lang="chart_tip" id="chartTip">Grafiğe tıklayarak filtreleyin.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-4">
+                <h4 class="section-title"><i class="fa-solid fa-cloud-arrow-up"></i> <span data-lang="upload_title">Log Yükle</span></h4>
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    <div class="upload-zone position-relative mb-3">
+                        <input type="file" name="file" accept=".log,.txt" required 
+                               class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;">
+                        <i class="fa-solid fa-file-lines fa-2x text-primary-custom mb-2"></i>
+                        <p class="small text-muted-custom mb-0 fw-medium" data-lang="upload_hint">Dosyayı buraya bırakın</p>
+                    </div>
+                    <button class="btn btn-primary btn-custom-primary w-100 fw-bold shadow-sm py-2 mb-3" type="submit">
+                        <i class="fa-solid fa-bolt me-2"></i> <span data-lang="start_analysis">Analizi Başlat</span>
+                    </button>
+                </form>
+                <button id="clearLogBtn" class="btn btn-custom-danger w-100 fw-bold shadow-sm py-2">
+                    <i class="fa-solid fa-trash-can me-2"></i> <span data-lang="clear_log">Logu Kaldır</span>
+                </button>
+            </div>
+
         </div>
 
-        <!-- SAĞ KOLON -->
-        <div class="col-lg-8">
-            <div class="custom-card p-0 h-100 d-flex flex-column cyber-table-container">
-                <div class="p-4 border-bottom border-secondary border-opacity-10 d-flex justify-content-between align-items-center unselectable">
-                    <h6 class="text-uppercase mb-0 fw-bold" style="color: var(--text-main);">
-                        <i class="fa-solid fa-terminal me-2 text-primary"></i> <span data-lang="live_logs">Canlı Log Akışı</span>
-                    </h6>
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" id="logCountBadge">
-                        {{ stats.total | default(0) }} <span data-lang="records">Kayıt</span>
+        <div class="col-lg-9">
+            <div class="glass-card h-100 d-flex flex-column table-container-card">
+                <div class="p-3 border-bottom border-color d-flex justify-content-between align-items-center">
+                    <h4 class="section-title mb-0"><i class="fa-solid fa-list-check"></i> <span data-lang="live_logs">Canlı Log Akışı</span></h4>
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 font-monospace py-2 px-3 fw-bold" id="logCountBadge">
+                        {{ stats.total | default(0) }} REC
                     </span>
                 </div>
                 
                 <div class="table-responsive flex-grow-1">
-                    <table class="table table-custom mb-0 align-middle">
-                        <thead class="sticky-top unselectable">
+                    <table class="cyber-table" id="logTable">
+                        <thead>
                             <tr>
-                                <th class="ps-4" data-lang="time">Zaman</th>
+                                <th class="ps-4" onclick="sortTable(0)" data-lang="time">Zaman <i class="fa-solid fa-sort ms-1 small opacity-50"></i></th>
                                 <th data-lang="source">Kaynak</th>
                                 <th data-lang="event_type">Olay Türü</th>
-                                <th data-lang="target_ip">Hedef / IP</th>
-                                <th class="text-end pe-4" data-lang="priority">Öncelik</th>
+                                <th data-lang="target_ip">IP Adresi</th>
+                                <th class="text-end pe-5" onclick="sortTable(4)" data-lang="priority">Risk Seviyesi <i class="fa-solid fa-sort ms-1 small opacity-50"></i></th>
                             </tr>
                         </thead>
                         <tbody id="logTableBody">
                             {% if not logs %}
-                            <tr>
-                                <td colspan="5" class="text-center py-5 unselectable">
-                                    <div class="d-flex flex-column align-items-center opacity-50 text-muted">
-                                        <i class="fa-solid fa-box-open fa-3x mb-3"></i>
-                                        <p data-lang="no_data">Henüz veri yok. Lütfen sol taraftan dosya yükleyin.</p>
+                            <tr id="noDataRow">
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="fa-regular fa-folder-open fa-4x mb-3 opacity-25 text-primary-custom"></i>
+                                        <h6 class="text-muted-custom fw-bold" data-lang="no_data_title">Veri Bulunamadı</h6>
+                                        <p class="small text-muted-custom" data-lang="no_data_desc">Analize başlamak için lütfen bir log dosyası yükleyin.</p>
                                     </div>
                                 </td>
                             </tr>
                             {% endif %}
 
                             {% for log in logs %}
-                            <tr class="log-row" data-priority="{{ log.priority }}">
-                                <td class="ps-4 time-col">{{ log.timestamp }}</td>
-                                <td>
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary font-monospace border border-secondary border-opacity-25">
-                                        {{ log.source }}
-                                    </span>
-                                </td>
-                                <td style="color: var(--text-main);">{{ log.event }}</td>
-                                <td class="text-primary">{{ log.ip }}</td>
-                                <td class="text-end pe-4">
+                            {% set row_class = 'row-low' %}
+                            {% if log.priority == 'CRITICAL' %} {% set row_class = 'row-critical' %}
+                            {% elif log.priority == 'HIGH' %} {% set row_class = 'row-high' %}
+                            {% endif %}
+                            
+                            <tr class="log-row {{ row_class }}" data-priority="{{ log.priority }}" 
+                                data-val-priority="{% if log.priority == 'CRITICAL' %}3{% elif log.priority == 'HIGH' %}2{% else %}1{% endif %}"
+                                data-val-time="{{ log.timestamp }}">
+                                <td class="ps-4 text-muted-custom font-monospace small">{{ log.timestamp }}</td>
+                                <td><span class="badge-source">{{ log.source }}</span></td>
+                                <td class="fw-bold" style="color: var(--text-main);">{{ log.event }}</td>
+                                <td class="text-primary-custom font-monospace">{{ log.ip }}</td>
+                                <td class="text-end pe-5">
                                     {% if log.priority == 'CRITICAL' %}
-                                        <span class="badge bg-critical badge-glow">CRITICAL</span>
+                                        <span class="badge-cyber bg-crit-soft" data-lang-priority="CRITICAL"><i class="fa-solid fa-skull-crossbones me-1"></i> CRITICAL</span>
                                     {% elif log.priority == 'HIGH' %}
-                                        <span class="badge bg-high">HIGH</span>
+                                        <span class="badge-cyber bg-high-soft" data-lang-priority="HIGH"><i class="fa-solid fa-triangle-exclamation me-1"></i> HIGH</span>
                                     {% else %}
-                                        <span class="badge bg-low">LOW</span>
+                                        <span class="badge-cyber bg-low-soft" data-lang-priority="LOW"><i class="fa-solid fa-shield-check me-1"></i> LOW</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -359,63 +441,48 @@
     </div>
 </div>
 
-<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const htmlEl = document.documentElement;
-    const centerText = document.getElementById('centerText');
-    const themeIcon = document.getElementById('themeIcon');
     const langBtn = document.getElementById('currentLang');
+    const themeIcon = document.getElementById('themeIcon');
 
-    // --- DİL YÖNETİMİ ---
     const translations = {
         tr: {
-            critical_threat: "Kritik Tehdit",
-            fp_blocked: "FP Engellendi",
-            threat_dist: "Tehdit Dağılımı",
-            clear_filter: "Temizle",
-            filter: "Filtre",
-            chart_hint: "Tabloyu filtrelemek için grafik dilimlerine tıklayın.",
-            log_analysis: "Log Analizi",
-            upload_hint: "Analiz etmek istediğiniz .log veya .txt dosyasını seçin.",
-            start_analysis: "Analizi Başlat",
-            live_logs: "Canlı Log Akışı",
-            records: "Kayıt",
-            time: "Zaman",
-            source: "Kaynak",
-            event_type: "Olay Türü",
-            target_ip: "Hedef / IP",
-            priority: "Öncelik",
-            no_data: "Henüz veri yok. Lütfen sol taraftan dosya yükleyin.",
-            system_active: "Sistem Aktif",
-            chart_labels: ['Kritik', 'Yüksek', 'Normal'],
-            no_data_chart: 'Veri Yok'
+            critical_threat: "Kritik Tehdit", fp_blocked: "Güvenli Trafik", threat_dist: "Tehdit Dağılımı",
+            upload_title: "Log Yükle", upload_hint: "Dosyayı buraya bırakın", start_analysis: "Analizi Başlat",
+            live_logs: "Canlı Log Akışı", time: "Zaman", source: "Kaynak", event_type: "Olay Türü",
+            target_ip: "IP Adresi", priority: "Risk Seviyesi", system_active: "AKTİF",
+            chart_labels: ['Kritik', 'Yüksek', 'Düşük'], no_data_chart: 'Veri Yok',
+            chart_tip: 'Grafiğe tıklayarak filtreleyin.', reset_filter: 'Filtreyi Sıfırla',
+            priority_critical: 'KRİTİK', priority_high: 'YÜKSEK', priority_low: 'DÜŞÜK',
+            clear_log: 'Logu Kaldır', no_data_title: 'Veri Bulunamadı',
+            no_data_desc: 'Analize başlamak için lütfen bir log dosyası yükleyin.'
         },
         en: {
-            critical_threat: "Critical Threat",
-            fp_blocked: "FP Blocked",
-            threat_dist: "Threat Distribution",
-            clear_filter: "Clear",
-            filter: "Filter",
-            chart_hint: "Click chart slices to filter the table.",
-            log_analysis: "Log Analysis",
-            upload_hint: "Select a .log or .txt file to analyze.",
-            start_analysis: "Start Analysis",
-            live_logs: "Live Log Stream",
-            records: "Records",
-            time: "Time",
-            source: "Source",
-            event_type: "Event Type",
-            target_ip: "Target / IP",
-            priority: "Priority",
-            no_data: "No data yet. Please upload a file from the left.",
-            system_active: "System Active",
-            chart_labels: ['Critical', 'High', 'Normal'],
-            no_data_chart: 'No Data'
+            critical_threat: "Critical Threat", fp_blocked: "Safe Traffic", threat_dist: "Threat Distribution",
+            upload_title: "Upload Log", upload_hint: "Drop log file here", start_analysis: "Start Analysis",
+            live_logs: "Live Log Stream", time: "Time", source: "Source", event_type: "Event Type",
+            target_ip: "IP Address", priority: "Risk Level", system_active: "ONLINE",
+            chart_labels: ['Critical', 'High', 'Low'], no_data_chart: 'No Data',
+            chart_tip: 'Click on chart to filter.', reset_filter: 'Reset Filter',
+            priority_critical: 'CRITICAL', priority_high: 'HIGH', priority_low: 'LOW',
+            clear_log: 'Clear Log', no_data_title: 'No Data Found',
+            no_data_desc: 'Please upload a log file to start analysis.'
         }
     };
 
     let currentLang = localStorage.getItem('lang') || 'tr';
+    
+    const canvasElement = document.getElementById('severityChart');
+    const rawData = canvasElement.dataset.stats;
+    let incomingData = rawData ? JSON.parse(rawData) : {};
+    let isEmpty = !incomingData.CRITICAL && !incomingData.HIGH && !incomingData.LOW;
+
+    function getChartLabels(lang) {
+        return isEmpty ? [translations[lang].no_data_chart] : translations[lang].chart_labels;
+    }
+
     applyLanguage(currentLang);
 
     function toggleLanguage() {
@@ -426,20 +493,22 @@
 
     function applyLanguage(lang) {
         langBtn.innerText = lang.toUpperCase();
-        
         document.querySelectorAll('[data-lang]').forEach(el => {
             const key = el.getAttribute('data-lang');
-            if(translations[lang][key]) {
-                el.innerText = translations[lang][key];
-            }
+            if(translations[lang][key]) el.innerText = translations[lang][key];
+        });
+        document.querySelectorAll('[data-lang-priority]').forEach(el => {
+            const priorityKey = el.getAttribute('data-lang-priority').toLowerCase();
+            const translatedText = translations[lang]['priority_' + priorityKey];
+            el.innerHTML = el.innerHTML.replace(/(CRITICAL|HIGH|LOW|KRİTİK|YÜKSEK|DÜŞÜK)/, translatedText);
         });
 
         if (window.myChart) {
-            updateChartLanguage(lang);
+            window.myChart.data.labels = getChartLabels(lang);
+            window.myChart.update();
         }
     }
 
-    // --- TEMA YÖNETİMİ ---
     let currentTheme = localStorage.getItem('theme') || 'dark';
     applyTheme(currentTheme);
 
@@ -451,136 +520,147 @@
 
     function applyTheme(theme) {
         htmlEl.setAttribute('data-theme', theme);
-        if (theme === 'dark') {
-            themeIcon.className = 'fa-solid fa-sun';
-            Chart.defaults.color = "#94a3b8";
-            Chart.defaults.borderColor = "#334155";
-        } else {
-            themeIcon.className = 'fa-solid fa-moon';
-            Chart.defaults.color = "#475569";
-            Chart.defaults.borderColor = "#e2e8f0";
+        themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        if (window.myChart) {
+            Chart.defaults.color = theme === 'dark' ? '#cbd5e1' : '#64748b';
+            Chart.defaults.borderColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+            window.myChart.update();
         }
-        if (window.myChart) window.myChart.update();
     }
 
-    // --- GRAFİK & FİLTRELEME ---
-    const canvasElement = document.getElementById('severityChart');
-    const rawData = canvasElement.dataset.stats;
-    const incomingData = rawData ? JSON.parse(rawData) : {};
-
-    const chartData = {
-        CRITICAL: incomingData.CRITICAL || 0,
-        HIGH: incomingData.HIGH || 0,
-        LOW: incomingData.LOW || 0
-    };
-
-    const priorityMap = ['CRITICAL', 'HIGH', 'LOW'];
-    let labels = translations[currentLang].chart_labels;
-    let dataValues = [chartData.CRITICAL, chartData.HIGH, chartData.LOW];
-    let colors = ['#ef4444', '#f97316', '#10b981']; 
-
-    if (dataValues.reduce((a, b) => a + b, 0) === 0) {
-        labels = [translations[currentLang].no_data_chart]; 
-        dataValues = [1]; 
-        colors = ['#cbd5e1'];
-    }
+    let dataValues = isEmpty ? [1] : [incomingData.CRITICAL || 0, incomingData.HIGH || 0, incomingData.LOW || 0];
+    let bgColors = isEmpty ? ['#334155'] : ['#ef4444', '#f97316', '#10b981'];
 
     const ctx = canvasElement.getContext('2d');
     Chart.defaults.font.family = "'Inter', sans-serif";
-
-    let activeFilter = null; 
-
+    
     window.myChart = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie', 
         data: {
-            labels: labels,
+            labels: getChartLabels(currentLang),
             datasets: [{
                 data: dataValues,
-                backgroundColor: colors,
-                borderWidth: 0,
-                hoverOffset: 15
+                backgroundColor: bgColors,
+                borderWidth: 1,
+                borderColor: 'var(--bg-card)', 
+                hoverOffset: 8
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '70%',
             plugins: {
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: {size: 11, weight: '600'} } },
                 tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            if (context.label === 'No Data' || context.label === 'Veri Yok') return null;
-                            return ` ${context.label}: ${context.raw}`;
-                        }
-                    }
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#f8fafc',
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false
                 }
             },
             onClick: (evt, elements) => {
-                if (elements.length > 0) {
+                if (!isEmpty && elements.length > 0) {
                     const index = elements[0].index;
-                    if (dataValues[0] === 1 && dataValues.length === 1 && (chartData.CRITICAL+chartData.HIGH === 0)) return;
-
-                    const selectedPriority = priorityMap[index];
-                    const selectedLabel = window.myChart.data.labels[index];
-
-                    if (activeFilter === selectedPriority) {
-                        resetFilter();
-                    } else {
-                        applyFilter(selectedPriority, selectedLabel);
-                    }
+                    const priorities = ['CRITICAL', 'HIGH', 'LOW'];
+                    filterTable(priorities[index]);
                 }
             }
         }
     });
 
-    function updateChartLanguage(lang) {
-        if (chartData.CRITICAL + chartData.HIGH + chartData.LOW > 0) {
-            window.myChart.data.labels = translations[lang].chart_labels;
-        } else {
-            window.myChart.data.labels = [translations[lang].no_data_chart];
-        }
-        window.myChart.update();
-    }
-
-    function applyFilter(priority, labelText) {
-        activeFilter = priority;
+    function filterTable(priority) {
         const rows = document.querySelectorAll('.log-row');
-        let visibleCount = 0;
-
+        document.getElementById('resetFilterBtn').style.display = 'block';
         rows.forEach(row => {
             if (row.dataset.priority === priority) {
-                row.classList.remove('hidden');
-                visibleCount++;
+                row.style.display = 'table-row';
             } else {
-                row.classList.add('hidden');
+                row.style.display = 'none';
             }
         });
-
-        document.getElementById('centerText').style.display = 'block';
-        document.getElementById('centerLabel').innerText = labelText;
-        document.getElementById('centerLabel').style.color = getColorForPriority(priority);
-        document.getElementById('resetFilterBtn').style.display = 'block';
-        document.getElementById('logCountBadge').innerText = `${visibleCount}`;
+        document.getElementById('chartTip').style.display = 'none';
     }
 
     function resetFilter() {
-        activeFilter = null;
-        const rows = document.querySelectorAll('.log-row');
-        rows.forEach(row => row.classList.remove('hidden'));
-
-        document.getElementById('centerText').style.display = 'none';
+        document.querySelectorAll('.log-row').forEach(row => row.style.display = 'table-row');
         document.getElementById('resetFilterBtn').style.display = 'none';
-        
-        const totalText = "{{ stats.total | default(0) }}";
-        const recText = translations[currentLang].records;
-        document.getElementById('logCountBadge').innerText = `${totalText} ${recText}`;
+        document.getElementById('chartTip').style.display = 'inline';
     }
 
-    function getColorForPriority(p) {
-        if(p === 'CRITICAL') return '#ef4444';
-        if(p === 'HIGH') return '#f97316';
-        return '#10b981';
+    document.getElementById('clearLogBtn').addEventListener('click', function() {
+        fetch('/clear_logs', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    const tableBody = document.getElementById('logTableBody');
+                    tableBody.innerHTML = `
+                        <tr id="noDataRow">
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <i class="fa-regular fa-folder-open fa-4x mb-3 opacity-25 text-primary-custom"></i>
+                                    <h6 class="text-muted-custom fw-bold" data-lang="no_data_title">Veri Bulunamadı</h6>
+                                    <p class="small text-muted-custom" data-lang="no_data_desc">Analize başlamak için lütfen bir log dosyası yükleyin.</p>
+                                </div>
+                            </td>
+                        </tr>`;
+                    
+                    document.getElementById('logCountBadge').innerText = '0 REC';
+                    document.getElementById('statCritical').innerText = '0';
+                    document.getElementById('statSafe').innerText = '0';
+
+                    isEmpty = true;
+                    incomingData = {};
+                    dataValues = [1];
+                    bgColors = ['#334155'];
+                    window.myChart.data.labels = getChartLabels(currentLang);
+                    window.myChart.data.datasets[0].data = dataValues;
+                    window.myChart.data.datasets[0].backgroundColor = bgColors;
+                    window.myChart.update();
+
+                    resetFilter();
+                    applyLanguage(currentLang);
+                } else {
+                    alert('Hata oluştu.');
+                }
+            })
+            .catch(error => console.error('Hata:', error));
+    });
+
+    // --- SIRALAMA (SORTING) FONKSİYONU ---
+    let sortDirection = { 0: 'asc', 4: 'desc' }; // 0: Zaman, 4: Risk
+
+    function sortTable(columnIndex) {
+        const table = document.getElementById("logTable");
+        const tbody = document.getElementById("logTableBody");
+        const rows = Array.from(tbody.querySelectorAll(".log-row"));
+        
+        if (rows.length === 0) return;
+
+        // Yönü tersine çevir
+        sortDirection[columnIndex] = sortDirection[columnIndex] === 'asc' ? 'desc' : 'asc';
+        const dir = sortDirection[columnIndex];
+
+        rows.sort((a, b) => {
+            let valA, valB;
+
+            if (columnIndex === 4) { 
+                // Risk Seviyesi (Sayısal değer üzerinden sırala: Critical=3, High=2, Low=1)
+                valA = parseInt(a.getAttribute('data-val-priority'));
+                valB = parseInt(b.getAttribute('data-val-priority'));
+            } else {
+                // Zaman (String karşılaştırması)
+                valA = a.getAttribute('data-val-time');
+                valB = b.getAttribute('data-val-time');
+            }
+
+            if (valA < valB) return dir === 'asc' ? -1 : 1;
+            if (valA > valB) return dir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Sıralanmış satırları tabloya geri ekle
+        rows.forEach(row => tbody.appendChild(row));
     }
 </script>
 
